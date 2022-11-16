@@ -1,5 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
+using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 
 public class GameController : MonoBehaviour {
     public GameObject[] hazards;
@@ -9,9 +11,9 @@ public class GameController : MonoBehaviour {
     public float startWait;
     public float waveWait;
 
-    public GUIText scoreText;
-    public GUIText restartText;
-    public GUIText gameOverText;
+    public Text scoreText;
+    public Text restartText;
+    public Text gameOverText;
     public GameObject restartButton;
 
     private int score;
@@ -28,7 +30,7 @@ public class GameController : MonoBehaviour {
         gameOver = false;
         restartText.text = "";
         gameOverText.text = "";
-        restartButton.active = false;
+        restartButton.SetActive(false);
         score = 0;
         UpdateScore();
         StartCoroutine( SpawnWaves() );
@@ -37,14 +39,15 @@ public class GameController : MonoBehaviour {
     void Update() {
         if (restart) {
             if (Input.GetKeyDown(KeyCode.R)) {
-                Application.LoadLevel(Application.loadedLevel);
+                SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
             }
         }
     }
 
     IEnumerator SpawnWaves() {
         yield return new WaitForSeconds(startWait);
-        while (true) {
+
+        while (!gameOver) {
             for (int i = 0; i < hazardCount; i++) {
                 GameObject hazard = hazards[Random.Range(0,hazards.Length)];
                 float size = Random.Range(0.7f, 1.8f);
@@ -56,15 +59,13 @@ public class GameController : MonoBehaviour {
                 Instantiate(hazard, spawnPosition, spawnRotation);
                 yield return new WaitForSeconds(spawnWait);
             }
-            yield return new WaitForSeconds(waveWait);
 
-            if (gameOver) {
-                restartText.text = "Press 'R' for Restart";
-                restartButton.active = true;
-                restart = true;
-                break;
-            }
+            yield return new WaitForSeconds(waveWait);
         }
+
+        restartText.text = "按 'R' 键重新开始";
+        restartButton.SetActive(true);
+        restart = true;
     }
 
     public void AddScore(int newScoreValue)
@@ -74,16 +75,16 @@ public class GameController : MonoBehaviour {
     }
 
     void UpdateScore() {
-        scoreText.text = "Score: " + score;
+        scoreText.text = "得分: " + score;
     }
 
     public void GameOver() {
-        gameOverText.text = "Game Over!";
+        gameOverText.text = "游戏结束!";
         gameOver = true;
     }
 
     public void Restart()
     {
-        Application.LoadLevel(Application.loadedLevel);
+        SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex);
     }
 }
